@@ -12,8 +12,9 @@ on(document, "click", function(e) {
 			(player.x-offset.x)/zoom, 
 			(player.y-offset.y)/zoom, 
 			player.scale));
+		var image = player.image.id === "default"?"default":btoa(player.image.src);
 		socket.emit("placeimage", {
-			image:btoa(player.image.src), 
+			image:image, 
 			text:player.text,
 			rot: player.rot,
 			x: (player.x-offset.x)/zoom,

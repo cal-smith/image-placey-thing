@@ -14,8 +14,6 @@ var keydown = false;
 var mousedown = false;
 var placed_images = [];
 var images = new Map();
-//var default_image 
-//add_image(window.location.href + "Droid.jpg", );
 images.set("default", {name:"default", image:elem("default")})
 var players = new Map();
 var preview = elem("preview");
