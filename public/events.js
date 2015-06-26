@@ -71,8 +71,6 @@ on(elem("load-new-image"), "click", function(e) {
 			lem("new-image").value = "";
 			elem("image-text").value = "";
 			return false;
-			//append(elem("assets"), create([["video", {"src":new_image, "id":images.length, "autoplay":"true", "loop":"true", "crossorigin":"anonymous"}, []]]));
-			//http://zippy.gfycat.com/ScaryGrizzledComet.mp4
 		} else if (new_image.search(/.jpg|.png|.jpeg$/) !== -1) {
 			add_image(new_image, elem("image-text").value);
 		} else { return false; }

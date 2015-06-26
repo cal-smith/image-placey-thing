@@ -14,11 +14,13 @@ var keydown = false;
 var mousedown = false;
 var placed_images = [];
 var images = new Map();
-images.set("aHR0cDovLzEyNy4wLjAuMTo4MDAwL0Ryb2lkLmpwZw==", {name:"default", image:elem("aHR0cDovLzEyNy4wLjAuMTo4MDAwL0Ryb2lkLmpwZw==")})
+//var default_image 
+//add_image(window.location.href + "Droid.jpg", );
+images.set("default", {name:"default", image:elem("default")})
 var players = new Map();
 var preview = elem("preview");
 preview = preview.getContext("2d");
-var player = new Player(ctx, elem("aHR0cDovLzEyNy4wLjAuMTo4MDAwL0Ryb2lkLmpwZw=="), "", 0, 0, 0, 6);
+var player = new Player(ctx, elem("default"), "", 0, 0, 0, 6);
 var dev = true;
 
 /*
@@ -34,8 +36,9 @@ function add_image(url, name) {
 }
 
 function emit_playerdata() {
+	var image = player.image.id === "default"?"default":btoa(player.image.src);
 	socket.emit("playerdata", {
-			image: btoa(player.image.src), 
+			image: image, 
 			text: player.text,
 			rot: player.rot,
 			x: (player.x-offset.x)/zoom,
@@ -58,7 +61,7 @@ var socket = io.connect(url);
 socket.on('loaded', function(data) {
 	debug(data);
 	socket.emit('loaded', {player:{
-		image:btoa(player.image.src),
+		image:"default",
 		text:player.text,
 		rot:player.rot,
 		x:player.x,
@@ -71,6 +74,10 @@ socket.on('loaded', function(data) {
 	for (var i = 0; i < keys.length; i++) {
 		if (keys[i] != data.id) {
 			var v = data.players[keys[i]];
+			if (v == null) {
+				debug("i am error");
+				continue;
+			}
 			players.set(keys[i], new Player(ctx, 
 				images.get(v.image).image,
 				v.text,
@@ -118,7 +125,7 @@ socket.on('addimage', function(data) {
 });
 
 socket.on('newuser', function(data) {
-	players.set(data.id, new Player(ctx, elem("aHR0cDovLzEyNy4wLjAuMTo4MDAwL0Ryb2lkLmpwZw=="), "", 0, 0, 0, 6));
+	players.set(data.id, new Player(ctx, elem("default"), "", 0, 0, 0, 6));
 });
 
 socket.on('usergone', function(data) {
