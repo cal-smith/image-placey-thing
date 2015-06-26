@@ -52,7 +52,7 @@ function removeimage(image) {
 */
 var url = window.location.host;
 if (url === "wat.reallyawesomedomain.com") {
-	url += "8000";
+	url += ":8000";
 };
 var socket = io.connect(url);
 socket.on('loaded', function(data) {
