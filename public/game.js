@@ -50,7 +50,7 @@ function removeimage(image) {
 /*
 * socket events
 */
-var socket = io.connect('127.0.0.1:8000/');
+var socket = io.connect(window.location.host);
 socket.on('loaded', function(data) {
 	debug(data);
 	socket.emit('loaded', {player:{
