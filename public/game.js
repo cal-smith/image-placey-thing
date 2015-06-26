@@ -50,7 +50,11 @@ function removeimage(image) {
 /*
 * socket events
 */
-var socket = io.connect(window.location.host);
+var url = window.location.host;
+if (url === "wat.reallyawesomedomain.com") {
+	url += "8000";
+};
+var socket = io.connect(url);
 socket.on('loaded', function(data) {
 	debug(data);
 	socket.emit('loaded', {player:{
