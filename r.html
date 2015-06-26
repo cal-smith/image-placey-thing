@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>wat</title>
+	<style type="text/css">
+	* {
+		box-sizing: border-box;
+	}
+	body {
+		margin: 0;
+		padding: 0;
+	}
+	.controls {
+		position: fixed;
+		padding: 5px;
+		left: 5px;
+		top: 5px;
+		background: rgba(128, 128, 128, 0.5);
+		z-index: 1;
+	}
+	.canvas {
+		position: fixed;
+		z-index: 0;
+	}
+
+	.img-1 {
+		display: none;
+	}
+
+	option:hover .img-1 {
+		display: block;
+	}
+
+	input {
+		margin-top: 5px;
+		display: block;
+	}
+
+	#preview {
+		padding-top: 5px;
+	}
+	</style>
+</head>
+<body>
+<div id="controls" class="controls">
+	<p>yea</p>
+	<input id="new-image" type="text" placeholder="image url" required>
+	<input id="image-text" type="text" placeholder="image name" required>
+	<button id="load-new-image">load</button>
+	<select id="select-image">
+		<option value="aHR0cDovLzEyNy4wLjAuMTo4MDAwL0Ryb2lkLmpwZw==">default</option>
+	</select>
+	<input id="text" type="text" placeholder="sample text">
+	<canvas id="preview" width="300" height="200"></canvas>
+</div>
+<canvas class="canvas" id="canvas"></canvas>
+<div id="assets" style="display:none;">
+	<img id="aHR0cDovLzEyNy4wLjAuMTo4MDAwL0Ryb2lkLmpwZw==" src="/Droid.jpg">
+	<img id="error" src="/error.png">
+</div>
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="/toolkit.js"></script>
+<script type="text/javascript" src="/events.js"></script>
+<script type="text/javascript" src="/player.js"></script>
+<script type="text/javascript" src="/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "image-placey-thing",
+  "version": "0.0.1",
+  "description": "place images get sand",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hansolo669/image-placey-thing.git"
+  },
+  "keywords": [],
+  "author": "hansolo669",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hansolo669/image-placey-thing/issues"
+  },
+  "homepage": "https://github.com/hansolo669/image-placey-thing",
+  "dependencies": {
+    "express": "^4.13.0",
+    "socket.io": "^1.3.5"
+  }
+}
