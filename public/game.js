@@ -10,6 +10,7 @@ var startpos = {x:0, y:0};
 var startoffset = {x:0, y:0};
 var zoom = 1;
 var offset = {x:0, y:0};
+//var mod = {x:(c.width/2), y:(c.height/2)};
 var keydown = false;
 var mousedown = false;
 var placed_images = [];
@@ -147,8 +148,8 @@ function frame () {
 		zoom -= (player.y - startpos.y)/300;
 		if (player.y - startpos.y < 0) {
 			//debug(offset);
-			//offset.x += ; 
-			//offset.y -= ;
+			//offset.x -= c.width/300; 
+			//offset.y -= c.height/300;
 		}
 	}
 	if (mousedown) {
@@ -159,8 +160,8 @@ function frame () {
 	}
 	ctx.clearRect(0, 0, c.width, c.height);
 	ctx.save();
+	ctx.translate(offset.x, offset.y);
 	ctx.scale(zoom, zoom);
-	ctx.translate(offset.x/zoom, offset.y/zoom);
 
 	//preview render calls
 	preview.fillStyle = "white";

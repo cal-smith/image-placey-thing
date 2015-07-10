@@ -36,7 +36,7 @@ Player.prototype.static = function(alt_ctx) {
 	var ctx = this.ctx;
 	if (alt_ctx) this.ctx = alt_ctx;
 	this.ctx.save();
-	this.ctx.translate(this.x, this.y);
+	this.ctx.translate(this.x-(c.width/2), this.y-(c.height/2));
 	this._common_draw();
 	this.ctx.restore();
 	if (alt_ctx) this.ctx = ctx;
@@ -60,7 +60,7 @@ Player.prototype.update = function(alt_ctx) {
 		}
 		this.ctx.translate((startpos.x-offset.x)/zoom, (startpos.y-offset.y)/zoom);
 	} else {
-		this.ctx.translate((this.x-offset.x)/zoom, (this.y-offset.y)/zoom);
+		this.ctx.translate((this.x-offset.x-(c.width/2))/zoom, (this.y-offset.y-(c.height/2))/zoom);
 	}
 	this._common_draw();
 	this.ctx.restore();
