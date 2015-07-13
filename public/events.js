@@ -1,6 +1,6 @@
 on(document, "mousemove", function(e) {
-	player.x = e.clientX;
-	player.y = e.clientY;
+	player.x = e.clientX-c.width/2;
+	player.y = e.clientY-c.height/2;
 });
 
 on(document, "click", function(e) {

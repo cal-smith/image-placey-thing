@@ -160,7 +160,7 @@ function frame () {
 	}
 	ctx.clearRect(0, 0, c.width, c.height);
 	ctx.save();
-	ctx.translate(offset.x, offset.y);
+	ctx.translate((c.width/2), (c.height/2));
 	ctx.scale(zoom, zoom);
 
 	//preview render calls
