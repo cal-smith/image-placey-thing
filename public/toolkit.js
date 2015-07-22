@@ -35,7 +35,15 @@ function create(template) {
 }
 
 function append(root, element) {
-	root.appendChild(element);
+	return root.appendChild(element);
+}
+
+function remove(root, element) {
+	return root.removeChild(element);
+}
+
+function replace(root, old_element, new_element) {
+	return root.replaceChild(new_element, old_element);
 }
 
 function includes(array, callback) {
@@ -45,5 +53,5 @@ function includes(array, callback) {
 	return false;
 }
 
-function elem(e){ return document.getElementById(e); }
+var elem = document.getElementById.bind(document);
 function on(e, type, callback) { return e.addEventListener(type, callback); }

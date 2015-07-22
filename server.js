@@ -53,6 +53,10 @@ io.on('connection', function (socket) {
 		socket.broadcast.emit('removeimage', data);
 	});
 
+	socket.on('message', function(data) {
+		socket.broadcast.emit('message', data);
+	});
+
 	socket.on('disconnect', function (data) {
 		socket.broadcast.emit('usergone', {id:socket.id});
 		delete players[socket.id];

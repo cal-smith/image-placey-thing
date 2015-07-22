@@ -1,3 +1,14 @@
+//bugs:
+// need to enforce usernames as much as possible. fall back to "anon".
+// need to add controls for: map zoom, image rot, image scale, etc
+// need to clarify how to add images
+// need to add hide/minimize button to the windows
+// disable highlighting when dragging elements (and force pointer while draging)
+// need to have windows correctly z-index (ie: focused windows on top)
+// save ui position to localstorage
+// save images to redis or something
+// handle image errors
+
 /*
 * globals/singletons
 */
@@ -10,7 +21,7 @@ var startpos = {x:0, y:0};
 var startoffset = {x:0, y:0};
 var zoom = 1;
 var offset = {x:0, y:0};
-//var mod = {x:(c.width/2), y:(c.height/2)};
+var target;
 var keydown = false;
 var mousedown = false;
 var placed_images = [];
@@ -21,6 +32,7 @@ var preview = elem("preview");
 preview = preview.getContext("2d");
 var player = new Player(ctx, elem("default"), "", 0, 0, 0, 6);
 var dev = true;
+var windows = [];
 
 /*
 * utility functions
@@ -40,8 +52,8 @@ function emit_playerdata() {
 			image: image, 
 			text: player.text,
 			rot: player.rot,
-			x: (player.x-offset.x)/zoom,
-			y: (player.y-offset.y)/zoom,
+			x: player.x/zoom-offset.x,
+			y: player.y/zoom-offset.y,
 			scale:player.scale});
 }
 
@@ -135,26 +147,38 @@ socket.on('removeimage', function(data) {
 	images.delte(data.image);
 });
 
+socket.on('message', function(data) {
+	append(elem("messages"), create([["span", {"class":"message", "text":data.text}, []]]));
+	var scroll = elem("messages").scrollHeight - elem("messages").offsetHeight;
+	var scrolltop = elem("messages").scrollTop;
+	if (scrolltop < scroll - 100 && scroll > 100) {
+	} else{
+		elem("messages").scrollTop = scroll;
+	}
+});
+
 /*
 * gameloop
 */
-function frame () {
+var last_time = 0;
+function frame (time) {
+	if (dev) {
+		var dt = time - last_time;
+		last_time = time;
+	}
 	emit_playerdata();
+	Windows.update_windows(Events);
 	if (key === 39) offset.x -= 15;//left arrow
 	if (key === 37) offset.x += 15;//right arrow
 	if (key === 38) offset.y += 15;//up arrow
 	if (key === 40) offset.y -= 15;//down arrow
-	if (key === 90) {//z 
+	if (key === 90) {//z
 		zoom -= (player.y - startpos.y)/300;
-		if (player.y - startpos.y < 0) {
-			//debug(offset);
-			//offset.x -= c.width/300; 
-			//offset.y -= c.height/300;
-		}
+		if (zoom <= 0.10) zoom = 0.10;
 	}
-	if (mousedown) {
-		offset.x += (player.x - startpos.x);
-		offset.y += (player.y - startpos.y);
+	if (Events.mousedown && Events.mousedown_target === c) {
+		offset.x += (player.x - startpos.x)/zoom;
+		offset.y += (player.y - startpos.y)/zoom;
 		startpos.x = player.x;
 		startpos.y = player.y;
 	}
@@ -180,8 +204,35 @@ function frame () {
 	});
 	player.update();
 	player.update(preview);
+
+	if (dev) {
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = "black";
+		ctx.beginPath();
+		ctx.moveTo(-20000, offset.y);
+		ctx.lineTo(20000, offset.y);
+		ctx.moveTo(offset.x, -20000);
+		ctx.lineTo(offset.x, 20000);
+		ctx.stroke();
+	}
+
 	ctx.restore();
 	preview.restore();
+
+	if (dev) {
+		ctx.font = "25px sans-serif";
+		ctx.fillText("Δt: "+dt.toFixed(2), c.width-200, 30);
+		ctx.fillText("offset: (" + Math.round(offset.x) + "," + Math.round(offset.y) + ")", c.width-200, 60);
+		ctx.fillText("player: (" + Math.round(player.x) + "," + Math.round(player.y) + ")", c.width-200, 90);
+		ctx.fillText("zoom: " + zoom.toFixed(2), c.width-200, 120);
+		ctx.strokeStyle = "blue";
+		ctx.beginPath();
+		ctx.moveTo(c.width/2, 0);
+		ctx.lineTo(c.width/2, c.height);
+		ctx.moveTo(0, c.height/2);
+		ctx.lineTo(c.width, c.height/2);
+		ctx.stroke();
+	}
 
 	requestAnimationFrame(frame);
 }

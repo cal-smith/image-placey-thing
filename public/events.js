@@ -1,30 +1,49 @@
+var Events = {
+	cursor:{x:0,y:0},
+	mousedown:false,
+	key:false,
+	click_target:null,
+	mousedown_target:null,
+	raw_event:null
+};
+
 on(document, "mousemove", function(e) {
+	Events.cursor.x = e.clientX;
+	Events.cursor.y = e.clientY;
 	player.x = e.clientX-c.width/2;
 	player.y = e.clientY-c.height/2;
 });
 
 on(document, "click", function(e) {
-	if (!keydown && offset.x === startoffset.x && offset.y === startoffset.y) {
-		placed_images.push(new Player(ctx, 
+	Events.click_target = e.target;
+	Events.raw_event = e;
+	if (!keydown && offset.x === startoffset.x 
+		&& offset.y === startoffset.y
+		&& e.target === elem("canvas")) {
+		placed_images.push(new Player(ctx,
 			player.image,
 			player.text,
 			player.rot, 
-			(player.x-offset.x)/zoom, 
-			(player.y-offset.y)/zoom, 
+			player.x/zoom-offset.x,
+			player.y/zoom-offset.y, 
 			player.scale));
 		var image = player.image.id === "default"?"default":btoa(player.image.src);
 		socket.emit("placeimage", {
 			image:image, 
 			text:player.text,
 			rot: player.rot,
-			x: (player.x-offset.x)/zoom,
-			y: (player.y-offset.y)/zoom,
+			x: player.x/zoom-offset.x,
+			y: player.y/zoom-offset.y,
 			scale:player.scale});
 	}
 });
 
 on(document, "mousedown", function(e) {
 	mousedown = true;
+	target = e;
+	Events.mousedown = true;
+	Events.raw_event = e;
+	Events.mousedown_target = e.target;
 	if (!keydown) {
 		startpos.x = player.x;
 		startpos.y = player.y;
@@ -34,6 +53,7 @@ on(document, "mousedown", function(e) {
 });
 
 on(document, "mouseup", function(e) {
+	Events.mousedown = false;
 	mousedown = false;
 });
 
@@ -62,34 +82,19 @@ on(document, "keyup", function(e) {
 	keydown = false;
 });
 
-on(elem("controls"), "click", function(e) { e.stopPropagation(); });
-on(elem("load-new-image"), "click", function(e) {
-	var new_image = elem("new-image").value;
-	if (new_image !== "" && elem("image-text").value !== "") {
-		var id = btoa(new_image);
-		if (new_image.endsWith(".mp4")||new_image.endsWith(".webm")||new_image.endsWith(".gifv")) {
-			debug("no");
-			lem("new-image").value = "";
-			elem("image-text").value = "";
-			return false;
-		} else if (new_image.search(/.jpg|.png|.jpeg$/) !== -1) {
-			add_image(new_image, elem("image-text").value);
-		} else { return false; }
-		player.image = elem(id);
-		socket.emit("addimage", {image:new_image, name:elem("image-text").value});
-		for (var i = 0; i < elem("select-image").length; i++) {
-			elem("select-image")[i].selected = false;
-		}
-		elem(id).setAttribute("selected", "true");
-		elem("new-image").value = "";
-		elem("image-text").value = "";
+var last_window = {elem:null, index:null};
+function uifocus(e) {
+	e.stopPropagation();
+	if (e.target.classList.contains("minimize")) {
+		debug(e.target);
+		e.target.parentNode.parentNode.style.top = c.height-40+"px";
+		e.target.parentNode.parentNode.style.width = "100px";
+		e.target.textContent = "+";
 	}
-});
-
-on(elem("select-image"), "change", function(e) {
-	player.image = images.get(elem("select-image").value).image;
-});
-
-on(elem("text"), "keyup", function(e) {
-	player.text = elem("text").value;
-});
+	if (last_window.elem && last_window.elem !== e.target) {
+		last_window.elem.style["z-index"] = last_window.index;
+	}
+	last_window.elem = e.target;
+	last_window.index = e.target.style["z-index"];
+	e.target.style["z-index"] = 3;
+}
