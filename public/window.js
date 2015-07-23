@@ -1,33 +1,49 @@
 (function(window){
 	window.Windows = {
-		windows:[]
-	};
+		windows: new Map(),
 
-	Windows.add_window = function (x, y, width, height, id, title, content, callback) {
-		//var x, y, minimized, width, height, title, index, content, id, callback;
-		var template = create([["div", {"class":"window " + id, "id":id, "style":"left:"+x+"px; top:"+y+"px; width:"+width+"px; height:"+height+"px;"}, [
-					["div", {"class":"titlebar"}, [
-						["span", {"text":title}, []],
-						["span", {"text":"_", "class":"minimize"}, []]]]]]]);
-		append(template.firstChild, content);
-		append(document.body, template);
-		on(elem(id).firstChild.childNodes[1], "click", function(e) {
-			console.log("minimize");
-		});
-		this.windows.push({element:elem(id), callback:callback, replace_content:function(new_content){
-			replace(this.element, this.element.childNodes[1], new_content);
-		}});
-		return this.element;
-	};
+		add_window: function (x, y, width, height, id, title, content, callback) {
+			var template = create([["div", {"class":"window " + id, "id":id, "style":"left:"+x+"px; top:"+y+"px; width:"+width+"px; height:"+height+"px;"}, [
+						["div", {"class":"titlebar"}, [
+							["span", {"text":title}, []],
+							["span", {"text":"_", "class":"minimize"}, []]],
+						["div", {}, []]]]]]);
+			append(template.firstChild.childNodes[1], content);
+			append(document.body, template);
+			on(elem(id).firstChild.childNodes[1], "click", function(e) {
+				_window = Windows.windows.get(id);
+				if (!_window.minimized) {
+					_window.minimized = true;
+					_window.height = elem(id).style.height;
+					_window.element.style.height = "40px";
+					_window.element.style.overflow = "hidden";
+					_window.element.style.resize = "none";
+					_window.element.firstChild.childNodes[1].textContent = "+";
+					_window.element.childNodes[1].style.display = "none";
+				} else {
+					_window.minimized = false;
+					_window.element.style.height = _window.height;
+					_window.element.style.overflow = "scroll";
+					_window.element.style.resize = "both";
+					_window.element.firstChild.childNodes[1].textContent = "_";
+					_window.element.childNodes[1].style.display = "block";
+				}
+			});
+			this.windows.set(id, {element:elem(id), callback:callback, minimized:false, height:height, replace_content:function(new_content){
+				replace(this.element, this.element.childNodes[1], new_content);
+			}});
+			return elem(id);
+		},
 
-	Windows.update_windows = function (e) {
-		for (var i = 0; i < this.windows.length; i++) {
-			if (this.windows[i].element.firstChild === e.mousedown_target && e.mousedown){
-				e.raw_event.stopPropagation();
-				this.windows[i].element.style.left = e.cursor.x - e.raw_event.layerX + "px";
-				this.windows[i].element.style.top = e.cursor.y - e.raw_event.layerY + "px";
+		update_windows: function (e) {
+			for (var w of this.windows) {
+				if (w[1].element.firstChild === e.mousedown_target && e.mousedown){
+					e.raw_event.stopPropagation();
+					w[1].element.style.left = e.cursor.x - e.raw_event.layerX + "px";
+					w[1].element.style.top = e.cursor.y - e.raw_event.layerY + "px";
+				}
+				w[1].callback(e);
 			}
-			this.windows[i].callback(e);
 		}
 	};
 
@@ -48,8 +64,6 @@
 	
 
 	controls = Windows.add_window(5, 5, 306, 400, "controls", "Controls", controls, function(e) {});
-
-	on(controls, "click", function(e) { console.log("a"); });
 
 	on(elem("debug"), "change", function(e){ dev = !dev; });
 
