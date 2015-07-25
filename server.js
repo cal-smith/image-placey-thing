@@ -54,7 +54,13 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('message', function(data) {
-		socket.broadcast.emit('message', data);
+		if (data.text[0] === "/") {
+			if (data.text.startsWith("/echo")) {
+				socket.emit('message', {text: "echo: " + data.text});
+			}
+		} else {
+			socket.broadcast.emit('message', data);
+		}
 	});
 
 	socket.on('disconnect', function (data) {

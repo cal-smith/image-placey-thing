@@ -4,7 +4,9 @@ var Events = {
 	key:false,
 	click_target:null,
 	mousedown_target:null,
-	raw_event:null
+	raw_event:null,
+	hover_target:null,
+	bounds:null
 };
 
 on(document, "mousemove", function(e) {
@@ -43,7 +45,7 @@ on(document, "mousedown", function(e) {
 	target = e;
 	Events.mousedown = true;
 	Events.raw_event = e;
-	Events.mousedown_target = e.target;
+	Events.mousedown_target = e.target;	
 	if (!keydown) {
 		startpos.x = player.x;
 		startpos.y = player.y;
@@ -73,13 +75,20 @@ on(document, "keypress", function(e) {
 });
 
 on(document, "keydown", function(e) {
-	//debug(e.keyCode);
 	key = e.keyCode;
 });
 
 on(document, "keyup", function(e) {
 	key = 0;
 	keydown = false;
+});
+
+on(document, "wheel", function(e) {
+	if (Events.hover_target === c) zoom -= e.deltaY*0.005;;
+});
+
+on(document, "mouseover", function(e) {
+	Events.hover_target = e.target;
 });
 
 var last_window = {elem:null, index:null};

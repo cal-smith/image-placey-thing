@@ -1,16 +1,84 @@
 (function(window){
 	window.Windows = {
+		/*I should probably re-assess weather we really need localStorage *and* a Map*/
 		windows: new Map(),
+		_window_store: localStorage,
+		_using_layer:null,
+		get_window: function (id) {
+			return JSON.parse(this._window_store.getItem(id));
+		},
+		set_window: function (id, obj) {
+			return this._window_store.setItem(id, JSON.stringify(obj));
+		},
+		update_window: function(id, key, val) {
+			var obj = this.get_window(id);
+			obj[key] = val;//dot syntax would add a new "key" property set to val
+			return this.set_window(id, obj);
+		},
+
+		// this works around the fact that neither gecko or webkit/blink can implement the spec properly
+		// gecko still uses layer[X|Y] while webkit/blink use offset[X|Y] and BOTH implement the other
+		// property as well but lock it to client[X|Y] at mousedown. WTF.
+		_real_elem_offset(ev) {
+			if (this._using_layer == null && ev.offsetX == ev.clientX && ev.offsetY == ev.clientY) {
+				this._using_layer = true;
+				console.log("using layer");
+			} else if (this._using_layer == null) {
+				this._using_layer = false;
+				console.log("using offset");
+			}
+			if (this._using_layer) {
+				return {x:ev.layerX, y:ev.layerY};
+			} else {
+				return {x:ev.offsetX, y:ev.offsetY};
+			}
+		},
+
+		resize: new MutationObserver(function (e) {
+			var win = Windows.get_window(e[0].target.id);
+			win.x = e[0].target.style.transform.split(" ")[0].replace(/[^0-9+]/g, "");
+			win.y = e[0].target.style.transform.split(" ")[1].replace(/[^0-9+]/g, "");
+			Windows.set_window(e[0].target.id, win);
+		}),
 
 		add_window: function (x, y, width, height, id, title, content, callback) {
-			var template = create([["div", {"class":"window " + id, "id":id, "style":"left:"+x+"px; top:"+y+"px; width:"+width+"px; height:"+height+"px;"}, [
+			var saved = this.get_window(id);
+			var minimized = false;
+			if (saved) {
+				x = saved.x;
+				y = saved.y;
+				width = saved.width;
+				height = saved.height;
+				minimized = saved.minimized;
+			}
+			var template = create([["div", {"class":"window " + id, "id":id, "style":"transform: translatex("+x+"px) translatey("+y+"px); width:"+width+"px; height:"+height+"px;"}, [
 						["div", {"class":"titlebar"}, [
 							["span", {"text":title}, []],
-							["span", {"text":"_", "class":"minimize"}, []]],
-						["div", {}, []]]]]]);
+							["span", {"text":"_", "class":"minimize"}, []]]],
+						["div", {}, []]]]]);
+
 			append(template.firstChild.childNodes[1], content);
 			append(document.body, template);
-			on(elem(id).firstChild.childNodes[1], "click", function(e) {
+
+			console.log(minimized);
+
+			this.windows.set(id, {element:elem(id), callback:callback, minimized:minimized, height:height, replace_content:function(new_content){
+				replace(this.element, this.element.childNodes[1], new_content);
+			}});
+			this.set_window(id, {x:x, y:y, height:height, width:width, minimized:minimized});
+
+			this.resize.observe(elem(id), {attributes:true});
+
+			//ew, too much duplication
+			if (minimized) {
+				elem(id).style.height = "40px";
+				elem(id).style.overflow = "hidden";
+				elem(id).style.resize = "none";
+				elem(id).firstChild.childNodes[1].textContent = "+";
+				elem(id).childNodes[1].style.display = "none";
+			}
+
+			on(elem(id).firstChild.childNodes[1], "click", function (e) {
 				_window = Windows.windows.get(id);
 				if (!_window.minimized) {
 					_window.minimized = true;
@@ -20,6 +88,7 @@
 					_window.element.style.resize = "none";
 					_window.element.firstChild.childNodes[1].textContent = "+";
 					_window.element.childNodes[1].style.display = "none";
+					Windows.update_window(id, "minimized", true);
 				} else {
 					_window.minimized = false;
 					_window.element.style.height = _window.height;
@@ -27,20 +96,22 @@
 					_window.element.style.resize = "both";
 					_window.element.firstChild.childNodes[1].textContent = "_";
 					_window.element.childNodes[1].style.display = "block";
+					Windows.update_window(id, "minimized", false);
 				}
 			});
-			this.windows.set(id, {element:elem(id), callback:callback, minimized:false, height:height, replace_content:function(new_content){
-				replace(this.element, this.element.childNodes[1], new_content);
-			}});
+
 			return elem(id);
 		},
 
 		update_windows: function (e) {
 			for (var w of this.windows) {
 				if (w[1].element.firstChild === e.mousedown_target && e.mousedown){
-					e.raw_event.stopPropagation();
-					w[1].element.style.left = e.cursor.x - e.raw_event.layerX + "px";
-					w[1].element.style.top = e.cursor.y - e.raw_event.layerY + "px";
+					e.raw_event.preventDefault();
+					e.raw_event.stopPropagation();//e.raw_event.offsetX:
+					var x = e.cursor.x - this._real_elem_offset(e.raw_event).x
+					var y = e.cursor.y - this._real_elem_offset(e.raw_event).y
+					console.log(e.cursor.x, "offset: " + e.raw_event.offsetX, "layer: " + e.raw_event.layerX);
+					w[1].element.style.transform = "translatex("+x+"px) translatey("+y+"px)";
 				}
 				w[1].callback(e);
 			}
@@ -50,7 +121,6 @@
 	/*
 	* init ui
 	*/
-
 	var controls = create([
 		["input", {id:"new-image", type:"text", placeholder:"image url", required:true}, []], 
 		["input", {id:"image-text", type:"text", placeholder:"image name", required:true}, []],
@@ -62,7 +132,6 @@
 			["input", {id:"debug", type:"checkbox", checked:true}, []]]],
 		["canvas", {id:"preview", width:"300", height:"200"}, []]]);
 	
-
 	controls = Windows.add_window(5, 5, 306, 400, "controls", "Controls", controls, function(e) {});
 
 	on(elem("debug"), "change", function(e){ dev = !dev; });

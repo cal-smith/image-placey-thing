@@ -174,8 +174,9 @@ function frame (time) {
 	if (key === 40) offset.y -= 15;//down arrow
 	if (key === 90) {//z
 		zoom -= (player.y - startpos.y)/300;
-		if (zoom <= 0.10) zoom = 0.10;
 	}
+	if (zoom <= 0.10) zoom = 0.10;
+	if (zoom >= 100) zoom = 100;
 	if (Events.mousedown && Events.mousedown_target === c) {
 		offset.x += (player.x - startpos.x)/zoom;
 		offset.y += (player.y - startpos.y)/zoom;
@@ -193,7 +194,7 @@ function frame (time) {
 	preview.fillStyle = "black";
 	preview.save();
 	preview.scale(0.1, 0.1);
-	preview.translate(offset.x+(c.width/3), offset.y+(c.height/2));
+	preview.translate(offset.x+(c.width-300), offset.y+c.height);
 	for (var i = 0; i < placed_images.length; i++) {
 		placed_images[i].static();
 		placed_images[i].static(preview);
@@ -206,6 +207,7 @@ function frame (time) {
 	player.update(preview);
 
 	if (dev) {
+		//draw global position crosshairs
 		ctx.lineWidth = 1;
 		ctx.strokeStyle = "black";
 		ctx.beginPath();
@@ -214,6 +216,16 @@ function frame (time) {
 		ctx.moveTo(offset.x, -20000);
 		ctx.lineTo(offset.x, 20000);
 		ctx.stroke();
+
+		//now in the preview
+		preview.lineWidth = 1;
+		preview.strokeStyle = "black";
+		preview.beginPath();
+		preview.moveTo(-20000, offset.y);
+		preview.lineTo(20000, offset.y);
+		preview.moveTo(offset.x, -20000);
+		preview.lineTo(offset.x, 20000);
+		preview.stroke();
 	}
 
 	ctx.restore();

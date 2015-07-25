@@ -32,6 +32,10 @@
 		border-bottom: 1px solid lightgrey;
 	}
 
+	.titlebar:hover {
+		pointer: defualt;
+	}
+
 	.titlebar span {
 		display: inline-block;
 		vertical-align: middle;
@@ -51,8 +55,6 @@
 	}
 
 	.controls {
-		/*left: 5px;
-		top: 5px;*/
 		z-index: 1;
 	}
 
@@ -79,10 +81,7 @@
 	}
 
 	.chat {
-		/*width: 500px;
-		height: 250px;*/
 		z-index: 2;
-		
 	}
 
 	.chat input[type=text] {
@@ -93,7 +92,11 @@
 	}
 	.messages {
 		overflow-y: scroll;
-		height: 180px;
+		position: absolute;
+		bottom: 30px;
+		top: 35px;
+		right: 0px;
+		left: 0px;
 	}
 	.message {
 		display: inline-block;

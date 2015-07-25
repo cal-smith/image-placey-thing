@@ -11,7 +11,7 @@ var Player = function(ctx, image, text, rot, x, y, scale) {
 
 Player.prototype._common_draw = function() {
 	//if (this.image == null) debug("null", this.image);
-	this.ctx.rotate(this.rot*Math.PI/180);
+	//this.ctx.rotate(this.rot*Math.PI/180);
 	/*try {
 	} catch (e) {
 		debug(e);
@@ -28,10 +28,11 @@ Player.prototype.static = function(alt_ctx) {
 	var ctx = this.ctx;
 	if (alt_ctx) this.ctx = alt_ctx;
 	this.ctx.save();
-	this.ctx.translate(offset.x, offset.y);
+	this.ctx.translate(this.x+offset.x, this.y+offset.y);
+	this.ctx.rotate(this.rot*Math.PI/180);
 	this.ctx.drawImage(this.image, 
-			(this.x)-(this.image.width/this.scale)/2, 
-			(this.y)-(this.image.height/this.scale)/2,
+			-(this.image.width/this.scale)/2, 
+			-(this.image.height/this.scale)/2,
 			this.image.width/this.scale, 
 			this.image.height/this.scale);
 	this.ctx.font = "" + 200/this.scale + "px sans-serif";
@@ -58,15 +59,19 @@ Player.prototype.update = function(alt_ctx) {
 			this.scale = new_scale;
 		}
 	}
+	this.ctx.save();
+	this.ctx.translate(this.x/zoom, this.y/zoom);
+	this.ctx.rotate(this.rot*Math.PI/180);
 	this.ctx.drawImage(this.image, 
-			this.x/zoom-(this.image.width/this.scale)/2, 
-			this.y/zoom-(this.image.height/this.scale)/2,
+			-(this.image.width/this.scale)/2, 
+			-(this.image.height/this.scale)/2,
 			this.image.width/this.scale, 
 			this.image.height/this.scale);
 	this.ctx.font = "" + 200/this.scale + "px sans-serif";
 	this.ctx.fillText(this.text, this.x/zoom-(this.image.width/this.scale)/2, this.y/zoom+(this.image.height/this.scale)/2);
 	this.ctx.strokeStyle = "white";
 	this.ctx.strokeText(this.text, this.x/zoom-(this.image.width/this.scale)/2, this.y/zoom+(this.image.height/this.scale)/2);
+	this.ctx.restore();
 	this._common_draw();
 	if (alt_ctx) this.ctx = ctx;
 }
