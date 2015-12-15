@@ -144,7 +144,7 @@ socket.on('usergone', function(data) {
 });
 
 socket.on('removeimage', function(data) {
-	images.delte(data.image);
+	images.delete(data.image);
 });
 
 socket.on('message', function(data) {
