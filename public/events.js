@@ -13,6 +13,10 @@ var Events = {
 	key:0
 };
 
+on(window, "beforeunload", function() {
+	socket.emit("disconnect", {});
+});
+
 on(document, "mousemove", function(e) {
 	Events.cursor.x = e.clientX;
 	Events.cursor.y = e.clientY;

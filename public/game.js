@@ -63,7 +63,7 @@ function removeimage(image) {
 }
 
 /*
-* socket events
+* incoming socket events
 */
 if (url === "wat.reallyawesomedomain.com") {
 	url += ":8000";
