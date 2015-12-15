@@ -5,7 +5,7 @@
 // need to add hide/minimize button to the windows
 // disable highlighting when dragging elements (and force pointer while draging)
 // need to have windows correctly z-index (ie: focused windows on top)
-// save ui position to localstorage
+// save ui height to localstorage
 // save images to redis or something
 // handle image errors
 
@@ -16,7 +16,6 @@ var c = elem("canvas");
 c.width = window.innerWidth;
 c.height = window.innerHeight;
 var ctx = c.getContext("2d");
-var key = 0;
 var startpos = {x:0, y:0};
 var startoffset = {x:0, y:0};
 var zoom = 1;
@@ -31,13 +30,15 @@ var players = new Map();
 var preview = elem("preview");
 preview = preview.getContext("2d");
 var player = new Player(ctx, elem("default"), "", 0, 0, 0, 6);
-var dev = true;
-var windows = [];
+var url = window.location.host;
+var socket = io.connect(url);
+var dev = false;
 
 /*
 * utility functions
 */
 function debug() { if (dev) console.log.apply(console, arguments); }
+
 function add_image(url, name) {
 	var id = btoa(url);
 	append(elem("assets"), create([["img", {"src":url, "id":id, "crossorigin":"anonymous"}, []]]));
@@ -64,11 +65,10 @@ function removeimage(image) {
 /*
 * socket events
 */
-var url = window.location.host;
 if (url === "wat.reallyawesomedomain.com") {
 	url += ":8000";
 };
-var socket = io.connect(url);
+
 socket.on('loaded', function(data) {
 	debug(data);
 	socket.emit('loaded', {player:{
@@ -168,15 +168,15 @@ function frame (time) {
 	}
 	emit_playerdata();
 	Windows.update_windows(Events);
-	if (key === 39) offset.x -= 15;//left arrow
-	if (key === 37) offset.x += 15;//right arrow
-	if (key === 38) offset.y += 15;//up arrow
-	if (key === 40) offset.y -= 15;//down arrow
-	if (key === 90) {//z
+	if (Events.key === 39) offset.x -= 15;//left arrow
+	if (Events.key === 37) offset.x += 15;//right arrow
+	if (Events.key === 38) offset.y += 15;//up arrow
+	if (Events.key === 40) offset.y -= 15;//down arrow
+	if (Events.key === 90) {//z
 		zoom -= (player.y - startpos.y)/300;
 	}
 	if (zoom <= 0.10) zoom = 0.10;
-	if (zoom >= 100) zoom = 100;
+	if (zoom >= 50) zoom = 50;
 	if (Events.mousedown && Events.mousedown_target === c) {
 		offset.x += (player.x - startpos.x)/zoom;
 		offset.y += (player.y - startpos.y)/zoom;

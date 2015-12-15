@@ -20,6 +20,7 @@ io.on('connection', function (socket) {
 	socket.emit('loaded', {players:players, placed_images:placed_images, images:image_array, id:socket.id});
 	socket.on('loaded', function (data) {
 		players[socket.id] = data.player;
+		players[socket.id].nick = "";
 	});
 	socket.broadcast.emit('newuser', {id:socket.id});
 	
@@ -56,10 +57,26 @@ io.on('connection', function (socket) {
 	socket.on('message', function(data) {
 		if (data.text[0] === "/") {
 			if (data.text.startsWith("/echo")) {
-				socket.emit('message', {text: "echo: " + data.text});
+				socket.emit('message', {text: "server: " + data.text.replace(/^\/echo\s/, "")});
+			} else if (data.text.startsWith("/nick")) {
+				var oldnick = players[socket.id].nick;
+				players[socket.id].nick = data.text.replace(/^\/nick\s/, "");//prevent nick from being empty space, "server", less than 2 chars, greater than...12?, or already in use
+				socket.emit('message', {text: "server: nick set to " + players[socket.id].nick});
+				if (oldnick === "") {
+					socket.broadcast.emit('message', {text: "server: " + players[socket.id].nick + " joined"});
+				} else {
+					socket.broadcast.emit('message', {text: "server: "+ oldnick + " is now known as " + players[socket.id].nick});
+				}
+			} else {
+				socket.emit('message', {text: "unknown command"});
 			}
 		} else {
-			socket.broadcast.emit('message', data);
+			if (players[socket.id].nick === "") {
+				socket.emit('message', {text: "use '/nick nickname' to chat"})
+			} else {
+				data.text = players[socket.id].nick + ": " + data.text;
+				socket.broadcast.emit('message', data);
+			}
 		}
 	});
 
@@ -70,7 +87,7 @@ io.on('connection', function (socket) {
 });
 
 var port = process.env.OPENSHIFT_IOJS_PORT  || 5000;
-var ip = process.env.OPENSHIFT_IOJS_IP || '127.0.0.1' || 'localhost';
+var ip = process.env.OPENSHIFT_IOJS_IP || 'localhost';
 server.listen(port, ip, function() {
 	console.log("Listening on " + port);
 });

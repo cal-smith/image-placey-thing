@@ -9,20 +9,6 @@ var Player = function(ctx, image, text, rot, x, y, scale) {
 	this.type = "image";
 }
 
-Player.prototype._common_draw = function() {
-	//if (this.image == null) debug("null", this.image);
-	//this.ctx.rotate(this.rot*Math.PI/180);
-	/*try {
-	} catch (e) {
-		debug(e);
-		this.ctx.drawImage(elem("error"), 
-			-(elem("error").width/this.scale)/2, 
-			-(elem("error").height/this.scale)/2, 
-			elem("error").width/this.scale, 
-			elem("error").height/this.scale);
-	}*/
-}
-
 Player.prototype.static = function(alt_ctx) {
 	if (this.image == null) debug("static null", this.image);
 	var ctx = this.ctx;
@@ -36,10 +22,9 @@ Player.prototype.static = function(alt_ctx) {
 			this.image.width/this.scale, 
 			this.image.height/this.scale);
 	this.ctx.font = "" + 200/this.scale + "px sans-serif";
-	this.ctx.fillText(this.text, this.x-(this.image.width/this.scale)/2, this.y+(this.image.height/this.scale)/2);
+	this.ctx.fillText(this.text, -(this.image.width/this.scale)/2, (this.image.height/this.scale)/2);
 	this.ctx.strokeStyle = "white";
-	this.ctx.strokeText(this.text, this.x-(this.image.width/this.scale)/2, this.y+(this.image.height/this.scale)/2);
-	this._common_draw();
+	this.ctx.strokeText(this.text, -(this.image.width/this.scale)/2, (this.image.height/this.scale)/2);
 	this.ctx.restore();
 	if (alt_ctx) this.ctx = ctx;
 }
@@ -48,12 +33,12 @@ Player.prototype.update = function(alt_ctx) {
 	if (this.image == null) debug("local null", this.image);
 	var ctx = this.ctx;
 	if (alt_ctx) this.ctx = alt_ctx;
-	if (key === 82) {//r
+	if (Events.key === 82) {//r
 		var new_rot = this.x - startpos.x;
 		if (this.rot*Math.PI/180 <= 180 && this.rot*Math.PI/180 >= -180) {
 			this.rot = new_rot;
 		}
-	} else if (key === 83) {//s
+	} else if (Events.key === 83) {//s
 		var new_scale = this.scale + (this.y - startpos.y)/300;
 		if (this.image.height/new_scale <= window.innerHeight && this.image.height/new_scale >= 12) {
 			this.scale = new_scale;
@@ -68,10 +53,9 @@ Player.prototype.update = function(alt_ctx) {
 			this.image.width/this.scale, 
 			this.image.height/this.scale);
 	this.ctx.font = "" + 200/this.scale + "px sans-serif";
-	this.ctx.fillText(this.text, this.x/zoom-(this.image.width/this.scale)/2, this.y/zoom+(this.image.height/this.scale)/2);
+	this.ctx.fillText(this.text, -(this.image.width/this.scale)/2, (this.image.height/this.scale)/2);
 	this.ctx.strokeStyle = "white";
-	this.ctx.strokeText(this.text, this.x/zoom-(this.image.width/this.scale)/2, this.y/zoom+(this.image.height/this.scale)/2);
+	this.ctx.strokeText(this.text, -(this.image.width/this.scale)/2, (this.image.height/this.scale)/2);
 	this.ctx.restore();
-	this._common_draw();
 	if (alt_ctx) this.ctx = ctx;
 }

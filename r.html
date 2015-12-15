@@ -54,6 +54,15 @@
 		background: lightgrey;
 	}
 
+	.window-content-container {
+		position: absolute;
+		top: 35px;
+		bottom: 0px;
+		left: 0px;
+		right: 0px;
+		overflow: hidden;
+	}
+
 	.controls {
 		z-index: 1;
 	}
@@ -92,15 +101,20 @@
 	}
 	.messages {
 		overflow-y: scroll;
+		overflow-wrap: break-word;
 		position: absolute;
 		bottom: 30px;
-		top: 35px;
+		top: 0px;
 		right: 0px;
 		left: 0px;
 	}
 	.message {
 		display: inline-block;
+		margin-bottom: 4px;
 		width: 100%;
+	}
+	#zoom {
+		width:250px;
 	}
 	</style>
 </head>

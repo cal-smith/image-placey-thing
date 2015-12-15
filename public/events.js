@@ -1,12 +1,16 @@
+//bundle of global state
+//at least we know exactly what's going on
+//due to the nature of this module, pretty much everything will touch this object
 var Events = {
 	cursor:{x:0,y:0},
 	mousedown:false,
-	key:false,
+	keydown:false,
 	click_target:null,
 	mousedown_target:null,
 	raw_event:null,
 	hover_target:null,
-	bounds:null
+	bounds:null,
+	key:0
 };
 
 on(document, "mousemove", function(e) {
@@ -40,9 +44,8 @@ on(document, "click", function(e) {
 	}
 });
 
+//this touches globals in game.js
 on(document, "mousedown", function(e) {
-	mousedown = true;
-	target = e;
 	Events.mousedown = true;
 	Events.raw_event = e;
 	Events.mousedown_target = e.target;	
@@ -56,31 +59,32 @@ on(document, "mousedown", function(e) {
 
 on(document, "mouseup", function(e) {
 	Events.mousedown = false;
-	mousedown = false;
 });
 
+//this touches the global canvas
 on(window, "resize", function(e) {
 	c.width = window.innerWidth;
 	c.height = window.innerHeight;
 });
 
+//this touches globals in game.js
 on(document, "keypress", function(e) {
-	if (!keydown) {
+	if (!Events.keydown) {
 		startpos.x = player.x;
 		startpos.y = player.y;
 		startoffset.x = offset.x;
 		startoffset.y = offset.y
 	}
-	keydown = true;
+	Events.keydown = true;
 });
 
 on(document, "keydown", function(e) {
-	key = e.keyCode;
+	Events.key = e.keyCode;
 });
 
 on(document, "keyup", function(e) {
-	key = 0;
-	keydown = false;
+	Events.key = 0;
+	Events.keydown = false;
 });
 
 on(document, "wheel", function(e) {
@@ -90,20 +94,3 @@ on(document, "wheel", function(e) {
 on(document, "mouseover", function(e) {
 	Events.hover_target = e.target;
 });
-
-var last_window = {elem:null, index:null};
-function uifocus(e) {
-	e.stopPropagation();
-	if (e.target.classList.contains("minimize")) {
-		debug(e.target);
-		e.target.parentNode.parentNode.style.top = c.height-40+"px";
-		e.target.parentNode.parentNode.style.width = "100px";
-		e.target.textContent = "+";
-	}
-	if (last_window.elem && last_window.elem !== e.target) {
-		last_window.elem.style["z-index"] = last_window.index;
-	}
-	last_window.elem = e.target;
-	last_window.index = e.target.style["z-index"];
-	e.target.style["z-index"] = 3;
-}

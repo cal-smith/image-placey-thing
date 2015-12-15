@@ -16,7 +16,7 @@
 			return this.set_window(id, obj);
 		},
 
-		// this works around the fact that neither gecko or webkit/blink can implement the spec properly
+		// this works around the fact that neither gecko or webkit/blink can implement the spec properly.
 		// gecko still uses layer[X|Y] while webkit/blink use offset[X|Y] and BOTH implement the other
 		// property as well but lock it to client[X|Y] at mousedown. WTF.
 		_real_elem_offset(ev) {
@@ -51,11 +51,15 @@
 				height = saved.height;
 				minimized = saved.minimized;
 			}
-			var template = create([["div", {"class":"window " + id, "id":id, "style":"transform: translatex("+x+"px) translatey("+y+"px); width:"+width+"px; height:"+height+"px;"}, [
+			var template = create([["div", {"class":"window " + id, "id":id, 
+				"style":"transform: translatex("+x+"px) \
+				translatey("+y+"px); width:"+width+"px; \
+				height:"+height+"px; min-width:"+width+"px; \
+				min-height:"+height+"px;"}, [
 						["div", {"class":"titlebar"}, [
 							["span", {"text":title}, []],
 							["span", {"text":"_", "class":"minimize"}, []]]],
-						["div", {}, []]]]]);
+						["div", {"class":"window-content-container"}, []]]]]);
 
 			append(template.firstChild.childNodes[1], content);
 			append(document.body, template);
@@ -69,6 +73,9 @@
 
 			this.resize.observe(elem(id), {attributes:true});
 
+			//minimize should just go down to a taskbar/dock like "button bar" that grows and shrinks as windows are minimized
+			//grab the title from the window, set the whole window to display:none and instance a little button at the bottom
+			//of the screen. this would also let windows start minimized or hidden (perhaps a console or text editor or the like?)
 			//ew, too much duplication
 			if (minimized) {
 				elem(id).style.height = "40px";
@@ -107,10 +114,9 @@
 			for (var w of this.windows) {
 				if (w[1].element.firstChild === e.mousedown_target && e.mousedown){
 					e.raw_event.preventDefault();
-					e.raw_event.stopPropagation();//e.raw_event.offsetX:
+					e.raw_event.stopPropagation();
 					var x = e.cursor.x - this._real_elem_offset(e.raw_event).x
 					var y = e.cursor.y - this._real_elem_offset(e.raw_event).y
-					console.log(e.cursor.x, "offset: " + e.raw_event.offsetX, "layer: " + e.raw_event.layerX);
 					w[1].element.style.transform = "translatex("+x+"px) translatey("+y+"px)";
 				}
 				w[1].callback(e);
@@ -128,11 +134,23 @@
 		["select", {id:"select-image"}, [
 			["option", {value:"default", text:"default"}, []]]],
 		["input", {id:"text", type:"text", placeholder:"sample text"}, []],
+		["label", {id:"zoom-label", text:"zoom", "for":"zoom"}, []],
+		["input", {id:"zoom", type:"range", min:"0.10", max:"50", step:"0.1"}, []],
 		["label", {text:"debug"}, [
 			["input", {id:"debug", type:"checkbox", checked:true}, []]]],
 		["canvas", {id:"preview", width:"300", height:"200"}, []]]);
 	
-	controls = Windows.add_window(5, 5, 306, 400, "controls", "Controls", controls, function(e) {});
+	controls = Windows.add_window(5, 5, 306, 410, "controls", "Controls", controls, function(e) {
+		if (zoom > elem("zoom").valueAsNumber  || zoom < elem("zoom").valueAsNumber) {
+			elem("zoom").valueAsNumber = zoom;
+			elem("zoom-label").textContent = "zoom: " + zoom.toFixed(2);
+		}
+	});
+
+	on(elem("zoom"), "input", function(e) {
+		zoom = elem("zoom").valueAsNumber;
+		elem("zoom-label").textContent = "zoom: " + zoom.toFixed(2);
+	});
 
 	on(elem("debug"), "change", function(e){ dev = !dev; });
 
@@ -179,7 +197,7 @@
 		socket.emit("message", {
 			text:elem("messagetext").value
 		});
-		append(elem("messages"), create([["span", {"class":"message", "text":elem("messagetext").value}, []]]));
+		append(elem("messages"), create([["span", {"class":"message", "text":"> "+elem("messagetext").value}, []]]));
 		var scroll = elem("messages").scrollHeight - elem("messages").offsetHeight;
 		var scrolltop = elem("messages").scrollTop;
 		if (scrolltop < scroll - 100 && scroll > 100) {
